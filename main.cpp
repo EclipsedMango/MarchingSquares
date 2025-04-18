@@ -6,6 +6,10 @@ int getState(int a, int b, int c, int d) {
     return a * 8 + b * 4 + c * 2 + d * 1;
 }
 
+void drawIsoLines(Vector2 v1, Vector2 v2) {
+    DrawLineEx(v1, v2, 2, WHITE);
+}
+
 int main() {
     // These should only be initialized here, so we can have menus.
     const int monitor = GetCurrentMonitor();
@@ -30,6 +34,7 @@ int main() {
 
     int plane[cols][rows];
 
+
     // Create corners on a plane/grid.
     for (int i = 0; i < cols; ++i) {
         for (int j = 0; j < rows; ++j) {
@@ -41,20 +46,20 @@ int main() {
     while (!WindowShouldClose()) {
 
         BeginDrawing();
-        ClearBackground(GRAY);
+        ClearBackground(BLACK);
 
         // Draw corners.
-        for (int i = 0; i < cols; ++i) {
-            for (int j = 0; j < rows; ++j) {
-                // Color corner based on value.
-                if (plane[i][j] == 0) {
-                    DrawCircle(i * resolution, j * resolution, 3, BLACK);
-                } else {
-                    DrawCircle(i * resolution, j * resolution, 3, WHITE);
-                }
-                // DrawCircle(i * resolution, j * resolution, 3, Color(255, 255, 255, plane[i][j]*255));
-            }
-        }
+        // for (int i = 0; i < cols; ++i) {
+        //     for (int j = 0; j < rows; ++j) {
+        //         // Color corner based on value.
+        //         if (plane[i][j] == 0) {
+        //             DrawCircle(i * resolution, j * resolution, 2, BLACK);
+        //         } else {
+        //             DrawCircle(i * resolution, j * resolution, 2, WHITE);
+        //         }
+        //         // DrawCircle(i * resolution, j * resolution, 3, Color(255, 255, 255, plane[i][j]*255));
+        //     }
+        // }
 
         // Draw Lines. - 1 to Account for + 1 at initialisation.
         for (int i = 0; i < cols - 1; ++i) {
@@ -68,6 +73,54 @@ int main() {
                 Vector2 d = Vector2(x, y + resolution / 2.0);
 
                 int state = getState(plane[i][j], plane[i + 1][j], plane[i + 1][j + 1], plane[i][j + 1]);
+
+                switch (state) {
+                    case 1:
+                        drawIsoLines(c, d);
+                        break;
+                    case 2:
+                        drawIsoLines(b, c);
+                        break;
+                    case 3:
+                        drawIsoLines(b, d);
+                        break;
+                    case 4:
+                        drawIsoLines(a, b);
+                        break;
+                    case 5:
+                        drawIsoLines(a, d);
+                        drawIsoLines(b, c);
+                        break;
+                    case 6:
+                        drawIsoLines(a, c);
+                        break;
+                    case 7:
+                        drawIsoLines(a, d);
+                        break;
+                    case 8:
+                        drawIsoLines(a, d);
+                        break;
+                    case 9:
+                        drawIsoLines(a, c);
+                        break;
+                    case 10:
+                        drawIsoLines(a, b);
+                        drawIsoLines(c, d);
+                        break;
+                    case 11:
+                        drawIsoLines(a, b);
+                        break;
+                    case 12:
+                        drawIsoLines(b, d);
+                        break;
+                    case 13:
+                        drawIsoLines(b, c);
+                        break;
+                    case 14:
+                        drawIsoLines(c, d);
+                        break;
+                    default: break;
+                }
             }
         }
 
