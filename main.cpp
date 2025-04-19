@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "raylib.h"
+#include "raymath.h"
 
 int getState(int a, int b, int c, int d) {
     return a * 8 + b * 4 + c * 2 + d * 1;
@@ -34,7 +35,6 @@ int main() {
 
     int plane[cols][rows];
 
-
     // Create corners on a plane/grid.
     for (int i = 0; i < cols; ++i) {
         for (int j = 0; j < rows; ++j) {
@@ -42,8 +42,44 @@ int main() {
         }
     }
 
-    // Global Game loop.
+    float circleRadius = 100.0;
+    bool showCircle = false;
+
+    // Global loop.
     while (!WindowShouldClose()) {
+
+        float scrollValue = GetMouseWheelMove();
+        circleRadius += scrollValue * 10.0f;
+
+        if (IsKeyPressed(KEY_R)) {
+            showCircle = !showCircle;
+        }
+
+        if (showCircle) {
+            DrawCircleLinesV(Vector2(GetMouseX(), GetMouseY()), circleRadius, BLUE);
+        }
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            DrawCircleLinesV(Vector2(GetMouseX(), GetMouseY()), circleRadius, BLUE);
+            for (int i = 0; i < cols; ++i) {
+                for (int j = 0; j < rows; ++j) {
+                    if (Vector2Distance(Vector2(i * resolution, j * resolution), Vector2(GetMouseX(), GetMouseY())) < circleRadius) {
+                        plane[i][j] = 0;
+                    }
+                }
+            }
+        }
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+            DrawCircleLinesV(Vector2(GetMouseX(), GetMouseY()), circleRadius, BLUE);
+            for (int i = 0; i < cols; ++i) {
+                for (int j = 0; j < rows; ++j) {
+                    if (Vector2Distance(Vector2(i * resolution, j * resolution), Vector2(GetMouseX(), GetMouseY())) < circleRadius) {
+                        plane[i][j] = 1;
+                    }
+                }
+            }
+        }
 
         BeginDrawing();
         ClearBackground(BLACK);
