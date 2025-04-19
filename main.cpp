@@ -44,6 +44,7 @@ int main() {
 
     float circleRadius = 100.0;
     bool showCircle = false;
+    bool showGridCorners = false;
 
     // Global loop.
     while (!WindowShouldClose()) {
@@ -53,6 +54,10 @@ int main() {
 
         if (IsKeyPressed(KEY_R)) {
             showCircle = !showCircle;
+        }
+
+        if (IsKeyPressed(KEY_E)) {
+            showGridCorners = !showGridCorners;
         }
 
         if (showCircle) {
@@ -85,17 +90,19 @@ int main() {
         ClearBackground(BLACK);
 
         // Draw corners.
-        // for (int i = 0; i < cols; ++i) {
-        //     for (int j = 0; j < rows; ++j) {
-        //         // Color corner based on value.
-        //         if (plane[i][j] == 0) {
-        //             DrawCircle(i * resolution, j * resolution, 2, BLACK);
-        //         } else {
-        //             DrawCircle(i * resolution, j * resolution, 2, WHITE);
-        //         }
-        //         // DrawCircle(i * resolution, j * resolution, 3, Color(255, 255, 255, plane[i][j]*255));
-        //     }
-        // }
+        if (showGridCorners) {
+            for (int i = 0; i < cols; ++i) {
+                for (int j = 0; j < rows; ++j) {
+                    // Color corner based on value.
+                    if (plane[i][j] == 0) {
+                        DrawCircle(i * resolution, j * resolution, 2, BLACK);
+                    } else {
+                        DrawCircle(i * resolution, j * resolution, 2, WHITE);
+                    }
+                    // DrawCircle(i * resolution, j * resolution, 3, Color(255, 255, 255, plane[i][j]*255));
+                }
+            }
+        }
 
         // Draw Lines. - 1 to Account for + 1 at initialisation.
         for (int i = 0; i < cols - 1; ++i) {
@@ -160,6 +167,7 @@ int main() {
             }
         }
 
+        DrawFPS(25, 25);
         EndDrawing();
     }
 
