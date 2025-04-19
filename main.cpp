@@ -4,7 +4,8 @@
 #include "raymath.h"
 
 int getState(int a, int b, int c, int d) {
-    return a * 8 + b * 4 + c * 2 + d * 1;
+    // Bit shifting.
+    return d | c << 1 | b << 2 | a << 3;
 }
 
 void drawIsoLines(Vector2 v1, Vector2 v2) {
