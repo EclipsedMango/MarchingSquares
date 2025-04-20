@@ -6,7 +6,8 @@
 
 int getState(int a, int b, int c, int d) {
     // Bit shifting.
-    return d | c << 1 | b << 2 | a << 3;
+    // return d | c << 1 | b << 2 | a << 3;
+    return a * 8 + b * 4 + c * 2 + d * 1;
 }
 
 void drawIsoLines(Vector2 v1, Vector2 v2) {
@@ -56,6 +57,7 @@ int main() {
 
     // Global loop.
     while (!WindowShouldClose()) {
+        const float delta = GetFrameTime();
 
         float scrollValue = GetMouseWheelMove();
         circleRadius += scrollValue * 10.0f;
@@ -106,11 +108,11 @@ int main() {
                 offsetX += increment;
                 float offsetY = 0;
                 for (int j = 0; j < rows; ++j) {
-                    offsetY += increment;
                     plane[i][j] = stb_perlin_fbm_noise3(offsetX, offsetY, offsetZ, 1.0, 0.5, 2);
+                    offsetY += increment;
                 }
             }
-            offsetZ += 0.005;
+            offsetZ += 0.5 * delta;
         }
 
         // Draw corners.
@@ -133,17 +135,22 @@ int main() {
                 int x = i * resolution;
                 int y = j * resolution;
 
-                Vector2 a = Vector2(x + resolution / 2.0, y);
-                Vector2 b = Vector2(x + resolution, y + resolution / 2.0);
-                Vector2 c = Vector2(x + resolution / 2.0, y + resolution);
-                Vector2 d = Vector2(x, y + resolution / 2.0);
-
                 int state = getState(
                     ceil(plane[i][j]),
                     ceil(plane[i + 1][j]),
                     ceil(plane[i + 1][j + 1]),
                     ceil(plane[i][j + 1])
                 );
+
+                float aVal = plane[i][j] + 1;
+                float bVal = plane[i + 1][j] + 1;
+                float cVal = plane[i + 1][j + 1] + 1;
+                float dVal = plane[i][j + 1] + 1;
+
+                Vector2 a = Vector2(lerp(x, x + resolution, (1 - aVal) / (bVal - aVal)), y);
+                Vector2 b = Vector2(x + resolution, lerp(y, y + resolution, (1 - bVal) / (cVal - bVal)));
+                Vector2 c = Vector2(lerp(x, x + resolution, (1 - dVal) / (cVal - dVal)), y + resolution);
+                Vector2 d = Vector2(x, lerp(y, y + resolution, (1 - aVal) / (dVal - aVal)));
 
                 switch (state) {
                     case 1:
