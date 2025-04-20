@@ -1,4 +1,5 @@
 #include <iostream>
+#include <external/stb_perlin.h>
 
 #include "raylib.h"
 #include "raymath.h"
@@ -17,35 +18,41 @@ int main() {
     const int monitor = GetCurrentMonitor();
     SetConfigFlags(FLAG_MSAA_4X_HINT);
 
-    constexpr float physicsDelta = 1.0f / 240.0f;
-    float physicsTimer = 0.0f;
-
     int windowWidth = 1920;
     int windowHeight = 1080;
 
-    InitWindow(windowWidth, windowHeight, "Rays");
+    InitWindow(windowWidth, windowHeight, "MarchingSquares");
 
     SetWindowMonitor(monitor);
     SetWindowState(FLAG_WINDOW_RESIZABLE);
 
-    int resolution = 20;
+    int resolution = 10;
 
     // Add 1 to extend to edges of window.
     int cols = 1 + windowWidth / resolution;
     int rows = 1 + windowHeight / resolution;
 
-    int plane[cols][rows];
+    float plane[cols][rows];
 
-    // Create corners on a plane/grid.
-    for (int i = 0; i < cols; ++i) {
-        for (int j = 0; j < rows; ++j) {
-            plane[i][j] = GetRandomValue(0, 1);
-        }
-    }
+    float increment = 0.1;
+    float offsetZ = 0;
 
     float circleRadius = 100.0;
+
     bool showCircle = false;
     bool showGridCorners = false;
+    bool moveNoise = false;
+
+    // Generate noise once at startup.
+    float firstOffsetX = 0;
+    for (int i = 0; i < cols; ++i) {
+        firstOffsetX += increment;
+        float firstOffsetY = 0;
+        for (int j = 0; j < rows; ++j) {
+            firstOffsetY += increment;
+            plane[i][j] = stb_perlin_fbm_noise3(firstOffsetX, firstOffsetY, 0.0, 1.0, 0.5, 2);
+        }
+    }
 
     // Global loop.
     while (!WindowShouldClose()) {
@@ -53,19 +60,20 @@ int main() {
         float scrollValue = GetMouseWheelMove();
         circleRadius += scrollValue * 10.0f;
 
+        // Controls.
         if (IsKeyPressed(KEY_R)) {
             showCircle = !showCircle;
-        }
-
-        if (IsKeyPressed(KEY_E)) {
+        } else if (IsKeyPressed(KEY_E)) {
             showGridCorners = !showGridCorners;
+        } else if (IsKeyPressed(KEY_T)) {
+            moveNoise = !moveNoise;
         }
 
         if (showCircle) {
             DrawCircleLinesV(Vector2(GetMouseX(), GetMouseY()), circleRadius, BLUE);
         }
 
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             DrawCircleLinesV(Vector2(GetMouseX(), GetMouseY()), circleRadius, BLUE);
             for (int i = 0; i < cols; ++i) {
                 for (int j = 0; j < rows; ++j) {
@@ -76,7 +84,7 @@ int main() {
             }
         }
 
-        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             DrawCircleLinesV(Vector2(GetMouseX(), GetMouseY()), circleRadius, BLUE);
             for (int i = 0; i < cols; ++i) {
                 for (int j = 0; j < rows; ++j) {
@@ -87,20 +95,34 @@ int main() {
             }
         }
 
+        // Drawing.
         BeginDrawing();
         ClearBackground(BLACK);
+
+        // Enable 3D Noise.
+        if (moveNoise) {
+            float offsetX = 0;
+            for (int i = 0; i < cols; ++i) {
+                offsetX += increment;
+                float offsetY = 0;
+                for (int j = 0; j < rows; ++j) {
+                    offsetY += increment;
+                    plane[i][j] = stb_perlin_fbm_noise3(offsetX, offsetY, offsetZ, 1.0, 0.5, 2);
+                }
+            }
+            offsetZ += 0.005;
+        }
 
         // Draw corners.
         if (showGridCorners) {
             for (int i = 0; i < cols; ++i) {
                 for (int j = 0; j < rows; ++j) {
                     // Color corner based on value.
-                    if (plane[i][j] == 0) {
-                        DrawCircle(i * resolution, j * resolution, 2, BLACK);
-                    } else {
-                        DrawCircle(i * resolution, j * resolution, 2, WHITE);
-                    }
-                    // DrawCircle(i * resolution, j * resolution, 3, Color(255, 255, 255, plane[i][j]*255));
+                    DrawRectangle(i * resolution, j * resolution,
+                        resolution,
+                        resolution,
+                        Color(255, 255, 255, plane[i][j] * 255)
+                    );
                 }
             }
         }
@@ -116,7 +138,12 @@ int main() {
                 Vector2 c = Vector2(x + resolution / 2.0, y + resolution);
                 Vector2 d = Vector2(x, y + resolution / 2.0);
 
-                int state = getState(plane[i][j], plane[i + 1][j], plane[i + 1][j + 1], plane[i][j + 1]);
+                int state = getState(
+                    ceil(plane[i][j]),
+                    ceil(plane[i + 1][j]),
+                    ceil(plane[i + 1][j + 1]),
+                    ceil(plane[i][j + 1])
+                );
 
                 switch (state) {
                     case 1:
