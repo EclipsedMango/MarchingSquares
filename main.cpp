@@ -120,11 +120,13 @@ int main() {
             for (int i = 0; i < cols; ++i) {
                 for (int j = 0; j < rows; ++j) {
                     // Color corner based on value.
-                    DrawRectangle(i * resolution, j * resolution,
+                    if (plane[i][j] > 0) {
+                        DrawRectangle(i * resolution, j * resolution,
                         resolution,
                         resolution,
                         Color(255, 255, 255, plane[i][j] * 255)
-                    );
+                        );
+                    }
                 }
             }
         }
